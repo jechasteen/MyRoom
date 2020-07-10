@@ -1,62 +1,149 @@
-function setWeather() {
-    const weather = JSON.parse(this.responseText);
-    // Comment the above and uncomment below to make ui adjustments
-    // const weather = [
-    //     {
-    //         current: {
-    //             temperature: 86,
-    //             feelslike: 91,
-    //             skytext: "Sunny",
-    //             humidity: "52",
-    //             winddisplay: "4 mph Southwest",
-    //             observationpoint: "Dayton, OH"
-    //         }
-    //     }
-    // ]
-    let temp = document.getElementById('temp');
-    let feelslike = document.getElementById('feelslike');
-    let skytext = document.getElementById('skytext');
-    let humidity = document.getElementById('humidity');
-    let wind = document.getElementById('wind');
-    let place = document.getElementById('place');
-    let image = document.getElementById('weather-img').attributes.src;
+class Widget {
+    constructor(id, x = 1, y = 1, z, updateCallback) {
+        this.id = id;
+        this.ref = document.createElement('div');
+        this.ref.id = id;
+        this.ref.classList.add('widget');
 
-    var w = weather[0].current;
-    temp.textContent = w.temperature  + "℉";
-    feelslike.textContent = "(" + w.feelslike + "℉)";
-    skytext.textContent = w.skytext;
-    humidity.textContent = w.humidity + "%";
-    wind.textContent = w.winddisplay;
-    place.textContent = w.observationpoint;
-    image = w.imageUrl;
+        this.x = x;
+        this.y = y;
+        this.z = z || this.count++;
+        this.update = function() {
+            updateCallback(this);
+        }
+    }
+
+    static count = 0;
 }
 
-function getWeather() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.addEventListener('load', setWeather);
-    xhttp.open("GET", "/weather", true);
-    xhttp.send();
-}
+const setupWidgets = function () {
+    let weather = (function () {
+        let data = {
+            temp: undefined,
+            feelslike: undefined,
+            skytext: undefined,
+            humidity: undefined,
+            wind: undefined,
+            place: undefined,
+            image: undefined
+        }
 
-function getTime() {
-    let date = document.getElementById('date');
-    let time = document.getElementById('time');
+        function handleWeatherData () {
+            const w = JSON.parse(this.responseText)[0].current;
+    
+            data.temp = w.temperature;
+            data.feelslike = w.feelslike;
+            data.skytext = w.skytext;
+            data.humidity = w.humidity;
+            data.wind = w.winddisplay;
+            data.place = w.observationpoint;
+            data.image = w.imageUrl;
+            temp.update();
+            details.update();
+            skytext.update();
+        }
+    
+        function fetchWeather () {
+            var xhttp = new XMLHttpRequest();
+            xhttp.addEventListener('load', handleWeatherData);
+            xhttp.open("GET", "/weather", true);
+            xhttp.send();
+        }
 
-    let d = new Date();
-    let options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-    date.textContent = d.toLocaleDateString(undefined, options);
+        const temp = (function() {
+            const t = new Widget('temp', 0, 0, null, (widget) => {
+                t.ref.textContent = data.temp || "--";
+            });
+            t.ref.id = 'temp';
+            return t;
+        })();
 
-    time.textContent = d.toTimeString().split(' ')[0].split(":").slice(0, 2).join(":");
+        const details = (function () {
+            const d = new Widget('details', 0, 0, null, (widget) => {
+                feelslike.textContent = data.feelslike;
+                humidity.textContent = data.humidity;
+                wind.textContent = data.wind;
+            });
+
+            const ul = document.createElement('ul');
+            ul.id = 'details';
+            ul.classList.add('list');
+            
+            const feelslike = document.createElement('li');
+            const humidity = document.createElement('li');
+            const wind = document.createElement('li');
+
+            ul.appendChild(feelslike);
+            ul.appendChild(humidity);
+            ul.appendChild(wind);
+            d.ref.appendChild(ul);
+            d.update();
+
+            return d;
+        })();
+
+        const skytext = (function () {
+            const s = new Widget('skytext', 0, 0, null, (widget) => {
+                s.textContent = data.skytext;
+            });
+            s.id = 'skytext';
+            s.update();
+            return s;
+        })();
+
+        return {
+            temp: temp,
+            details: details,
+            skytext: skytext,
+            updateAll: fetchWeather
+        }
+    })();
+
+    const time = (function () {
+        const t = new Widget('time', 0, 0, null, (widget) => {
+            widget.ref.textContent = ( new Date() ).toTimeString().split(' ')[0].split(":").slice(0, 2).join(":");
+        });
+        t.ref.id = 'time';
+        t.update();
+        return t;
+    })();
+
+    const date = (function () {
+        const d = new Widget('date', 0, 0, null, (widget) => {
+            widget.ref.textContent = (new Date()).toLocaleDateString();
+        });
+        d.ref.id = 'date';
+        d.update();
+        return d;
+    })();
+
+    function updateAll() {
+        weather.updateAll();
+        time.update();
+        date.update();
+    }
+
+    return {
+        updateAll: updateAll,
+        weather: weather,
+        time: time,
+        date: date
+    }
 }
 
 window.onload = function() {
-    // TODO: Sensible timeout handling... 900000 = 15min
-    getWeather();
-    getTime();
-    setInterval( () => {
-        getWeather();
+    const widgets = setupWidgets();
+    widgets.updateAll();
+    const container = document.getElementById('container');
+    container.appendChild(widgets.date.ref);
+    container.appendChild(widgets.time.ref);
+    container.appendChild(widgets.weather.temp.ref);
+    container.appendChild(widgets.weather.skytext.ref);
+    container.appendChild(widgets.weather.details.ref);
+    setInterval(() => {
+        widgets.time.update();
+    }, 1000);
+    setInterval(() => {
+        widgets.weather.updateAll();
     }, 900000);
-    setInterval( () => {
-        getTime();
-    }, 500); 
 }
