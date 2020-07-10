@@ -26,7 +26,7 @@ const bodyParser = require('body-parser');
 
 //
 // Express properties
-app.set('views', path.join(__dirname, 'pub/views'));
+app.set('views', path.join(__dirname, 'pub'));
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, 'pub')));
