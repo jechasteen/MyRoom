@@ -3,13 +3,19 @@
     padding: 0;
 }
 
-.doesnt-exist {
+body{
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
     width: 100vw;
     height: 100vh;
     background-color: #2fad98;
     color: #edf2f2;
     font-family: 'Montserrat', sans-serif;
-    font-size: 2vh;
+    font-size: 10vh;
 }
 
 .widget {
@@ -18,4 +24,15 @@
 
 .list {
     list-style: none;
+}
+
+.lock-button {
+    position: fixed;
+    bottom: 0px;
+    right: 0px;
+    opacity: 0;
+}
+
+.lock-img {
+    max-width: 5vw;
 }

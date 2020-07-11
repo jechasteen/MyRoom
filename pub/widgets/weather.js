@@ -1,4 +1,4 @@
-import Widget from './widget.js';
+import { Widget, WidgetWithChildren } from './widget.js';
 
 export function weather () {
     let data = {
@@ -35,7 +35,7 @@ export function weather () {
 
     const temp = (function() {
         const t = new Widget('temp', 0, 0, null, (widget) => {
-            t.ref.textContent = data.temp || "--";
+            widget.ref.textContent = data.temp || "--";
         });
         t.ref.id = 'temp';
         return t;
@@ -74,10 +74,5 @@ export function weather () {
         return s;
     })();
 
-    return {
-        temp: temp,
-        details: details,
-        skytext: skytext,
-        update: fetchWeather
-    }
+    return new WidgetWithChildren("weather", [temp, details, skytext], 0, 0, null, fetchWeather);
 }

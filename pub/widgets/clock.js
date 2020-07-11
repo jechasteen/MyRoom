@@ -1,4 +1,4 @@
-import Widget from './widget.js';
+import { Widget } from './widget.js';
 
 export default function clock () {
     const t = new Widget('time', 0, 0, null, (widget) => {

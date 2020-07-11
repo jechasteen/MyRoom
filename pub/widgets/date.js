@@ -1,4 +1,4 @@
-import Widget from './widget.js'
+import { Widget } from './widget.js'
 
 export default function date () {
     const d = new Widget('date', 0, 0, null, (widget) => {
