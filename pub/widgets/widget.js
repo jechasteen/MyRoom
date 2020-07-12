@@ -9,8 +9,13 @@ export class Widget {
         this.y = y;
         this.z = z || this.count++;
 
-        this.mousedown = false;
+        // position element
+        this.ref.style.left = this.x + "px";
+        this.ref.style.top = this.y + "px";
+        this.ref.style.zIndex = this.z;
+
         this.clickStart = undefined;
+        this.selected = false;
 
         this.update = function() {
             if (typeof updateCallback == 'function') {
@@ -20,6 +25,14 @@ export class Widget {
     }
 
     static count = 0;
+
+    get state () {
+        return {
+            x: this.x.replace('px', ''),
+            y: this.y.replace('px', ''),
+            z: this.z.replace('px', '')
+        }
+    }
 }
 
 export class WidgetWithChildren extends Widget {
@@ -36,5 +49,19 @@ export class WidgetWithChildren extends Widget {
         this.update = function() {
             updateCallback(this);
         }
+    }
+
+    get state () {
+        const childStates = {};
+        for (var i = 0; i < this.children.length; i++) {
+            const child = this.children[i];
+            const s = {
+                x: child.x,
+                y: child.y,
+                z: child.z
+            }
+            childStates[child.id] = s;
+        }
+        return childStates;
     }
 }

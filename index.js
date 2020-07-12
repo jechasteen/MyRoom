@@ -8,8 +8,9 @@ const IP = process.env.IP || '127.0.0.1';
 
 //
 // Includes
+const child_process = require('child_process');
+const fs = require('fs');
 const path = require('path');
-const https = require('https');
 const weather = require('weather-js');
 
 //
@@ -17,6 +18,7 @@ const weather = require('weather-js');
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const { runInNewContext } = require('vm');
 
 // Include Routes
 // var routeName = require('./path/to/file')
@@ -44,12 +46,34 @@ app.get('/weather', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.render('index');
+    res.render('index', { state: JSON.stringify(widgetState) });
 });
+
+let widgetState = {};
+
+app.post('/', (req, res) => {
+    widgetState = JSON.parse(req.body.state);
+    fs.writeFile('state.json', JSON.stringify(widgetState), (err) => {
+        if (err) throw err;
+        console.log('saved');
+    })
+    res.redirect('/');
+})
 
 //
 // Listen
 app.listen(PORT, IP, () => {
-  console.log([appNameNice, ' server listening at \n',
-    '-->http://', hostName, ':', PORT].join(''))
+    if (fs.existsSync('state.json')) {
+        fs.readFile('state.json', (err, data) => {
+            widgetState = JSON.parse(data);
+        });
+    }
+    child_process.spawn(
+        'firefox.exe',
+        ['-new-window', 'http://localhost:1337'],
+        { detached: true }
+    );
+    console.log([appNameNice,
+                ' server listening at \n',
+                '-->http://', hostName, ':', PORT].join(''))
 });

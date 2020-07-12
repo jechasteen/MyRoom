@@ -1,9 +1,15 @@
 import { Widget } from './widget.js'
 
-export default function date () {
-    const d = new Widget('date', 0, 0, null, (widget) => {
-        widget.ref.textContent = (new Date()).toLocaleDateString();
-    });
+export default function date (state) {
+    const d = new Widget(
+        'date',
+        state.x,
+        state.y,
+        state.z,
+        (widget) => {
+            widget.ref.textContent = (new Date()).toLocaleDateString();
+        }
+    );
     d.ref.id = 'date';
     d.update();
     return d;

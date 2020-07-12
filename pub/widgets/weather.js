@@ -1,6 +1,14 @@
 import { Widget, WidgetWithChildren } from './widget.js';
 
-export function weather () {
+/*
+    example state:
+    const state = {
+        temp: { x: 1000, y, 50, x 1 },
+        details: { x: 100, y: 50, z: 0 },
+        skytext: { x: 150, y: 50, z: 0}
+    }
+*/
+export function weather (state) {
     let data = {
         temp: undefined,
         feelslike: undefined,
@@ -34,19 +42,31 @@ export function weather () {
     }
 
     const temp = (function() {
-        const t = new Widget('temp', 0, 0, null, (widget) => {
-            widget.ref.textContent = data.temp || "--";
-        });
+        const t = new Widget(
+            'temp',
+            state.temp.x,
+            state.temp.y,
+            state.temp.z,
+            (widget) => {
+                widget.ref.textContent = data.temp || "--";
+            }
+        );
         t.ref.id = 'temp';
         return t;
     })();
 
     const details = (function () {
-        const d = new Widget('details', 0, 0, null, (widget) => {
-            feelslike.textContent = data.feelslike;
-            humidity.textContent = data.humidity;
-            wind.textContent = data.wind;
-        });
+        const d = new Widget(
+            'details',
+            state.details.x,
+            state.details.y,
+            state.details.z,
+            (widget) => {
+                feelslike.textContent = data.feelslike;
+                humidity.textContent = data.humidity;
+                wind.textContent = data.wind;
+            }
+        );
 
         const ul = document.createElement('ul');
         ul.id = 'details';
@@ -66,9 +86,15 @@ export function weather () {
     })();
 
     const skytext = (function () {
-        const s = new Widget('skytext', 0, 0, null, (widget) => {
-            s.textContent = data.skytext;
-        });
+        const s = new Widget(
+            'skytext', 
+            state.skytext.x,
+            state.skytext.y,
+            state.skytext.z,
+            (widget) => {
+                s.textContent = data.skytext;
+            }
+        );
         s.id = 'skytext';
         s.update();
         return s;
